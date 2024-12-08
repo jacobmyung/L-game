@@ -37,6 +37,25 @@ class AllPossibleMoves:
                 (4, 4, 'N'), (4, 4, 'W'),
     ]
 
+def testAllPossibleMove():
+    testGame = LGame()
+    testGame.neutrals = []
+    testGame.player1 = ()
+    testGame.gridArray = [
+                ['-', '-', '-', '-'],
+                ['-', '-', '-', '-'],
+                ['-', '-', '-', '-'],
+                ['-', '-', '-', '-'], ]
+    with open("output.txt", "w") as text_file:
+        for i in range(len(AllPossibleMoves.listMove)):
+            move = AllPossibleMoves.listMove[i]
+            text_file.write('========\n')
+            text_file.write(str(move[0]) + ' ' + str(move[1]) + ' '  + str(move[2]) + '\n')
+            testGame.commitLPieceMove(move[0], move[1], move[2])
+            text_file.write(testGame.textPrintGameGrid())
+            testGame.whoseTurn = 1
+            testGame.deleteCurrPlayerFromGrid()
+            
 class LGame:
     """
     The overall game. Holds data for the playing grid as well as where each element is placed.
@@ -329,10 +348,21 @@ class LGame:
         else:
             self.whoseTurn = 1
               
-                
+    def checkIsNeutralLegalMove(self, prevX, prevY, newX, newY):
+        newArrRow, newArrCol = newY - 1, newX - 1
+        if (prevX, prevY) in self.neutrals:
+            if self.gridArray[newArrRow][newArrCol] == '-':
+                return True
+        else:
+            return False
+
     def commitNeutralMove(self, prevX, prevY, newX, newY):
         oldArrRow, oldArrCol = prevY - 1, prevX - 1
         newArrRow, newArrCol = newY - 1, newX - 1
+        self.neutrals.remove((prevX, prevY))
+        self.neutrals.append((newX, newY))
+        self.gridArray[oldArrRow][oldArrCol] = '-'
+        self.gridArray[newArrRow][newArrCol] = 'X'
 
     def undoDeleteMove(self):
         if self.whoseTurn == 1:
@@ -356,38 +386,24 @@ class LGame:
             if self.checkIsLegalMove(listMove[0], listMove[1], listMove[2]):
                 self.commitLPieceMove(listMove[0], listMove[1], listMove[2])
             # if the user inputted enough arguments for a neutral piece move, test if legal neutral piece move
-            if len(move == 7):
-                if self.checkIsNeutLegalMove(listMove[3], listMove[4], listMove[5], listMove[6]):
+            if len(move) == 7:
+                if self.checkIsNeutralLegalMove(listMove[3], listMove[4], listMove[5], listMove[6]):
                     self.commitNeutralMove(listMove[3], listMove[4], listMove[5], listMove[6])
             else:
                 print("Not a legal move")
                 self.undoDeleteMove()
                 continue
-
-            # if the inputted move has a neutral piece move, then do the neutral piece move
-            if len(move) == 7:
-                pass
+            if self.isGameOver():
+                print("Player " + str(self.whoseTurn) + " has no more possible moves.")
+                if self.whoseTurn == 1:
+                    opp = '2'
+                else:
+                    opp = '1'
+                print("Player " + opp + " is the winner!")
+                break
+            else:
+                self.undoDeleteMove()
 
 
 myGame = LGame()
-# myGame.printGameGrid()
-# print(myGame.checkIsLegalMove(2,1, 'E', 1))
-# print(myGame.getInputMove())
 myGame.mainGameLoop()
-# testGame = LGame()
-# testGame.neutrals = []
-# testGame.player1 = ()
-# testGame.gridArray = [
-#             ['-', '-', '-', '-'],
-#             ['-', '-', '-', '-'],
-#             ['-', '-', '-', '-'],
-#             ['-', '-', '-', '-'], ]
-# with open("output.txt", "w") as text_file:
-#     for i in range(len(AllPossibleMoves.listMove)):
-#         move = AllPossibleMoves.listMove[i]
-#         text_file.write('========\n')
-#         text_file.write(str(move[0]) + ' ' + str(move[1]) + ' '  + str(move[2]) + '\n')
-#         testGame.commitLPieceMove(move[0], move[1], move[2])
-#         text_file.write(testGame.textPrintGameGrid())
-#         testGame.whoseTurn = 1
-#         testGame.deleteCurrPlayerFromGrid()
