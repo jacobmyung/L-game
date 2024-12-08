@@ -13,11 +13,29 @@ class AllPossibleMoves:
                 (2, 3, 'N'), (2, 3, 'S'), (2, 3, 'E'), (2, 3, 'W'),
                 (3, 3, 'N'), (3, 3, 'S'), (3, 3, 'E'), (3, 3, 'W'),
                 (4, 3, 'N'), (4, 3, 'S'), (4, 3, 'W'),
-                (1, 4, 'N'), (1, 1, 'E'),
+                (1, 4, 'N'), (1, 4, 'E'),
                 (2, 4, 'N'), (2, 4, 'E'), (2, 4, 'W'),
                 (3, 4, 'N'), (3, 4, 'E'), (3, 4, 'W'),
                 (4, 4, 'N'), (4, 4, 'W'),
     }
+    listMove = [
+                (1, 1, 'S'), (1, 1, 'E'),
+                (2, 1, 'S'), (2, 1, 'E'), (2, 1, 'W'),
+                (3, 1, 'S'), (3, 1, 'E'), (3, 1, 'W'),
+                (4, 1, 'S'), (4, 1, 'W'),
+                (1, 2, 'N'), (1, 2, 'S'), (1, 2, 'E'),
+                (2, 2, 'N'), (2, 2, 'S'), (2, 2, 'E'), (2, 2, 'W'),
+                (3, 2, 'N'), (3, 2, 'S'), (3, 2, 'E'), (3, 2, 'W'),
+                (4, 2, 'N'), (4, 2, 'S'), (4, 2, 'W'),
+                (1, 3, 'N'), (1, 3, 'S'), (1, 3, 'E'),
+                (2, 3, 'N'), (2, 3, 'S'), (2, 3, 'E'), (2, 3, 'W'),
+                (3, 3, 'N'), (3, 3, 'S'), (3, 3, 'E'), (3, 3, 'W'),
+                (4, 3, 'N'), (4, 3, 'S'), (4, 3, 'W'),
+                (1, 4, 'N'), (1, 4, 'E'),
+                (2, 4, 'N'), (2, 4, 'E'), (2, 4, 'W'),
+                (3, 4, 'N'), (3, 4, 'E'), (3, 4, 'W'),
+                (4, 4, 'N'), (4, 4, 'W'),
+    ]
 
 class LGame:
     """
@@ -98,81 +116,81 @@ class LGame:
                 if nPostCoord == (x, y - 1):
                     print("Neutral piece overlap with L move")
                     return False
-                if self.gridArray[arrRow][arrCol] != '-':
+                if self.gridArray[arrRow - 1][arrCol] != '-':
                     return False
                 if x <= 2:
                     # Check right-long
                     if nPostCoord == (x + 1, y) or nPostCoord == (x + 2, y):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow + 1][arrCol] != '-' and self.gridArray[arrRow + 2][arrCol] != '-':
+                    if self.gridArray[arrRow][arrCol + 1] != '-' and self.gridArray[arrRow][arrCol + 2] != '-':
                         return False
                 else:
                     # Check left-long
                     if nPostCoord == (x - 1, y) or nPostCoord == (x - 2, y):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow - 1][arrCol] != '-' and self.gridArray[arrRow - 2][arrCol] != '-':
+                    if self.gridArray[arrRow][arrCol - 1] != '-' and self.gridArray[arrRow][arrCol - 2] != '-':
                         return False
             case 'S':
                 # Check bottom
                 if nPostCoord == (x, y + 1):
                     print("Neutral piece overlap with L move")
                     return False
-                if self.gridArray[arrRow][arrCol + 1] != '-':
+                if self.gridArray[arrRow + 1][arrCol] != '-':
                     return False
                 if x <= 2:
                     # Check right-long
                     if nPostCoord == (x + 1, y) or nPostCoord == (x + 2, y):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow + 1][arrCol] != '-' and self.gridArray[arrRow + 2][arrCol] != '-':
+                    if self.gridArray[arrRow][arrCol + 1] != '-' and self.gridArray[arrRow][arrCol + 2] != '-':
                         return False
                 else:
                     # Check left-long
                     if nPostCoord == (x - 1, y) or nPostCoord == (x - 2, y):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow - 1][arrCol] != '-' and self.gridArray[arrRow - 2][arrCol] != '-':
+                    if self.gridArray[arrRow][arrCol - 1] != '-' and self.gridArray[arrRow][arrCol - 2] != '-':
                         return False
             case 'E':
                 # Check right
                 if nPostCoord == (x + 1, y):
                     print("Neutral piece overlap with L move")
                     return False
-                if self.gridArray[arrRow + 1][arrCol] != '-':
+                if self.gridArray[arrRow][arrCol + 1] != '-':
                     return False
                 if y <= 2:
                     # Check down-long
                     if nPostCoord == (x, y + 1) or nPostCoord == (x, y + 2):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow][arrCol + 1] != '-' and self.gridArray[arrRow][arrCol + 2] != '-':
+                    if self.gridArray[arrRow + 1][arrCol] != '-' and self.gridArray[arrRow + 2][arrCol] != '-':
                         return False
                 else:
                     # Check up-long
                     if nPostCoord == (x, y - 1) or nPostCoord == (x, y - 2):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow][arrCol - 1] != '-' and self.gridArray[arrRow][arrCol - 2] != '-':
+                    if self.gridArray[arrRow - 1][arrCol] != '-' and self.gridArray[arrRow - 2][arrCol] != '-':
                         return False
             case 'W':
                 # Check left
-                if self.gridArray[arrRow - 1][arrCol] != '-':
+                if self.gridArray[arrRow][arrCol - 1] != '-':
                     return False
                 if y <= 2:
                     # Check down-long
                     if nPostCoord == (x, y + 1) or nPostCoord == (x, y + 2):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow][arrCol + 1] != '-' and self.gridArray[arrRow][arrCol + 2] != '-':
+                    if self.gridArray[arrRow + 1][arrCol] != '-' and self.gridArray[arrRow + 2][arrCol] != '-':
                         return False
                 else:
                     # Check up-long
                     if nPostCoord == (x, y - 1) or nPostCoord == (x, y - 2):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow][arrCol - 1] != '-' and self.gridArray[arrRow][arrCol - 2] != '-':
+                    if self.gridArray[arrRow - 1][arrCol] != '-' and self.gridArray[arrRow - 2][arrCol] != '-':
                         return False
         
         # If it passed all the previous tests, then it is a legal move
@@ -187,6 +205,16 @@ class LGame:
                 printString += str(self.gridArray[i][j])
                 printString += ' '
             print(printString)
+
+    def textPrintGameGrid(self):
+        # Prints the grid across 4 lines. Also prints a divider
+        printString = ""
+        for i in range(4):
+            for j in range(4):
+                printString += str(self.gridArray[i][j])
+                printString += ' '
+            printString += '\n'
+        return printString
 
     def deleteCurrPlayerFromGrid(self):
         # Deletes the current player's letter from the grid
@@ -302,8 +330,9 @@ class LGame:
             self.whoseTurn = 1
               
                 
-    def commitNeutralMove(self):
-        pass
+    def commitNeutralMove(self, prevX, prevY, newX, newY):
+        oldArrRow, oldArrCol = prevY - 1, prevX - 1
+        newArrRow, newArrCol = newY - 1, newX - 1
 
     def undoDeleteMove(self):
         if self.whoseTurn == 1:
@@ -324,8 +353,12 @@ class LGame:
             listMove = [None, None, None, None, None, None, None]
             for i in range(len(move)):
                 listMove[i] = move[i]
-            if self.checkIsLegalMove(listMove[0], listMove[1], listMove[2], listMove[3], listMove[4], listMove[5], listMove[6]):
+            if self.checkIsLegalMove(listMove[0], listMove[1], listMove[2]):
                 self.commitLPieceMove(listMove[0], listMove[1], listMove[2])
+            # if the user inputted enough arguments for a neutral piece move, test if legal neutral piece move
+            if len(move == 7):
+                if self.checkIsNeutLegalMove(listMove[3], listMove[4], listMove[5], listMove[6]):
+                    self.commitNeutralMove(listMove[3], listMove[4], listMove[5], listMove[6])
             else:
                 print("Not a legal move")
                 self.undoDeleteMove()
@@ -341,3 +374,20 @@ myGame = LGame()
 # print(myGame.checkIsLegalMove(2,1, 'E', 1))
 # print(myGame.getInputMove())
 myGame.mainGameLoop()
+# testGame = LGame()
+# testGame.neutrals = []
+# testGame.player1 = ()
+# testGame.gridArray = [
+#             ['-', '-', '-', '-'],
+#             ['-', '-', '-', '-'],
+#             ['-', '-', '-', '-'],
+#             ['-', '-', '-', '-'], ]
+# with open("output.txt", "w") as text_file:
+#     for i in range(len(AllPossibleMoves.listMove)):
+#         move = AllPossibleMoves.listMove[i]
+#         text_file.write('========\n')
+#         text_file.write(str(move[0]) + ' ' + str(move[1]) + ' '  + str(move[2]) + '\n')
+#         testGame.commitLPieceMove(move[0], move[1], move[2])
+#         text_file.write(testGame.textPrintGameGrid())
+#         testGame.whoseTurn = 1
+#         testGame.deleteCurrPlayerFromGrid()
