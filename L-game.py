@@ -1,0 +1,343 @@
+class AllPossibleMoves:
+    listDir = {'N', 'E', 'S', 'W'}
+    listMoves = {
+                (1, 1, 'S'), (1, 1, 'E'),
+                (2, 1, 'S'), (2, 1, 'E'), (2, 1, 'W'),
+                (3, 1, 'S'), (3, 1, 'E'), (3, 1, 'W'),
+                (4, 1, 'S'), (4, 1, 'W'),
+                (1, 2, 'N'), (1, 2, 'S'), (1, 2, 'E'),
+                (2, 2, 'N'), (2, 2, 'S'), (2, 2, 'E'), (2, 2, 'W'),
+                (3, 2, 'N'), (3, 2, 'S'), (3, 2, 'E'), (3, 2, 'W'),
+                (4, 2, 'N'), (4, 2, 'S'), (4, 2, 'W'),
+                (1, 3, 'N'), (1, 3, 'S'), (1, 3, 'E'),
+                (2, 3, 'N'), (2, 3, 'S'), (2, 3, 'E'), (2, 3, 'W'),
+                (3, 3, 'N'), (3, 3, 'S'), (3, 3, 'E'), (3, 3, 'W'),
+                (4, 3, 'N'), (4, 3, 'S'), (4, 3, 'W'),
+                (1, 4, 'N'), (1, 1, 'E'),
+                (2, 4, 'N'), (2, 4, 'E'), (2, 4, 'W'),
+                (3, 4, 'N'), (3, 4, 'E'), (3, 4, 'W'),
+                (4, 4, 'N'), (4, 4, 'W'),
+    }
+
+class LGame:
+    """
+    The overall game. Holds data for the playing grid as well as where each element is placed.
+    Will primarily hold 4 variables:
+        Position of player 1's L-piece
+        Position of player 2's L-piece
+        Position of neutral piece #1
+        Position of neutral piece #2
+    """
+    def __init__(self):
+        """
+        Initialize the starting locations for the L-pieces and neutral pieces.
+        """
+        self.player1 = (1, 2, 'S') # The red player
+        self.player2 = (4, 3, 'N') # The blue player
+        self.neutrals = [(1, 1), (4, 4)]
+        self.whoseTurn = 1
+        self.gridArray = [
+            ['X', '-', '-', '-'],
+            ['R', 'R', 'R', 'B'],
+            ['R', 'B', 'B', 'B'],
+            ['-', '-', '-', 'X'], ]
+            
+
+    def isGameOver(self):
+        # Checking whose turn it is, see if they have legal moves. If zero legal moves, then other player wins.
+        for move in AllPossibleMoves.listMoves:
+            if self.checkIsLegalMove(move[0], move[1], move[2]):
+                return False
+        return True
+
+    def checkIsLegalMove(self, x, y, dir, nPreX = None, nPreY = None, nPostX = None, nPostY = None):
+        # Delete the player we are checking for from the grid so we can accurately check if the move is legal
+        self.deleteCurrPlayerFromGrid()
+
+        # Store the move we are checking in a tuple
+        move = (x, y, dir)
+        # Store the row and column in a zero-based value to use when accessing the array.
+        arrRow, arrCol = y - 1, x - 1
+
+        # Check if the move is a possible move from list of all possible moves
+        if move not in AllPossibleMoves.listMoves:
+            return False
+        
+        # If the move is the same as the move they already did, then return false
+        if (self.whoseTurn == 1 and move == self.player1) or (self.whoseTurn == 2 and move == self.player2):
+            return False
+        
+        # Check if the neutral piece move is legal
+        if nPreX == None or nPreY != None or nPostX == None or nPostY == None:
+            hasNeutralMove = False
+        else:
+            hasNeutralMove = True
+        if hasNeutralMove:
+            nPrevCoord = (nPreX, nPreY)
+            if nPrevCoord not in self.neutrals:
+                print("Neutral piece did not start there")
+                return False
+            if nPrevCoord == (x, y):
+                print("Neutral piece overlap with L move")
+                return False
+        
+        #########
+        # Left off working here. Need to check if the postNeutral piece is in a legal position.
+        # Check if it tries to land where the opponents piece already is.
+        # Check if it is trying to move where the current players piece is trying to move to
+        #########
+
+        if self.gridArray[arrRow][arrCol] != '-':
+            return False
+
+        nPostCoord = (nPostX, nPostY)
+        # Check if the L-piece move conflicts with neutral or enemy L-piece
+        match dir:
+            case 'N':
+                # Check top
+                if nPostCoord == (x, y - 1):
+                    print("Neutral piece overlap with L move")
+                    return False
+                if self.gridArray[arrRow][arrCol] != '-':
+                    return False
+                if x <= 2:
+                    # Check right-long
+                    if nPostCoord == (x + 1, y) or nPostCoord == (x + 2, y):
+                        print("Neutral piece overlap with L move")
+                        return False
+                    if self.gridArray[arrRow + 1][arrCol] != '-' and self.gridArray[arrRow + 2][arrCol] != '-':
+                        return False
+                else:
+                    # Check left-long
+                    if nPostCoord == (x - 1, y) or nPostCoord == (x - 2, y):
+                        print("Neutral piece overlap with L move")
+                        return False
+                    if self.gridArray[arrRow - 1][arrCol] != '-' and self.gridArray[arrRow - 2][arrCol] != '-':
+                        return False
+            case 'S':
+                # Check bottom
+                if nPostCoord == (x, y + 1):
+                    print("Neutral piece overlap with L move")
+                    return False
+                if self.gridArray[arrRow][arrCol + 1] != '-':
+                    return False
+                if x <= 2:
+                    # Check right-long
+                    if nPostCoord == (x + 1, y) or nPostCoord == (x + 2, y):
+                        print("Neutral piece overlap with L move")
+                        return False
+                    if self.gridArray[arrRow + 1][arrCol] != '-' and self.gridArray[arrRow + 2][arrCol] != '-':
+                        return False
+                else:
+                    # Check left-long
+                    if nPostCoord == (x - 1, y) or nPostCoord == (x - 2, y):
+                        print("Neutral piece overlap with L move")
+                        return False
+                    if self.gridArray[arrRow - 1][arrCol] != '-' and self.gridArray[arrRow - 2][arrCol] != '-':
+                        return False
+            case 'E':
+                # Check right
+                if nPostCoord == (x + 1, y):
+                    print("Neutral piece overlap with L move")
+                    return False
+                if self.gridArray[arrRow + 1][arrCol] != '-':
+                    return False
+                if y <= 2:
+                    # Check down-long
+                    if nPostCoord == (x, y + 1) or nPostCoord == (x, y + 2):
+                        print("Neutral piece overlap with L move")
+                        return False
+                    if self.gridArray[arrRow][arrCol + 1] != '-' and self.gridArray[arrRow][arrCol + 2] != '-':
+                        return False
+                else:
+                    # Check up-long
+                    if nPostCoord == (x, y - 1) or nPostCoord == (x, y - 2):
+                        print("Neutral piece overlap with L move")
+                        return False
+                    if self.gridArray[arrRow][arrCol - 1] != '-' and self.gridArray[arrRow][arrCol - 2] != '-':
+                        return False
+            case 'W':
+                # Check left
+                if self.gridArray[arrRow - 1][arrCol] != '-':
+                    return False
+                if y <= 2:
+                    # Check down-long
+                    if nPostCoord == (x, y + 1) or nPostCoord == (x, y + 2):
+                        print("Neutral piece overlap with L move")
+                        return False
+                    if self.gridArray[arrRow][arrCol + 1] != '-' and self.gridArray[arrRow][arrCol + 2] != '-':
+                        return False
+                else:
+                    # Check up-long
+                    if nPostCoord == (x, y - 1) or nPostCoord == (x, y - 2):
+                        print("Neutral piece overlap with L move")
+                        return False
+                    if self.gridArray[arrRow][arrCol - 1] != '-' and self.gridArray[arrRow][arrCol - 2] != '-':
+                        return False
+        
+        # If it passed all the previous tests, then it is a legal move
+        return True
+        
+    def printGameGrid(self):
+        # Prints the grid across 4 lines. Also prints a divider
+        print("=======")
+        for i in range(4):
+            printString = ""
+            for j in range(4):
+                printString += str(self.gridArray[i][j])
+                printString += ' '
+            print(printString)
+
+    def deleteCurrPlayerFromGrid(self):
+        # Deletes the current player's letter from the grid
+        # There move is still saved in memory in self.player1 or self.player2
+        if self.whoseTurn == 1:
+            deleteChar = 'R'
+        elif self.whoseTurn == 2:
+            deleteChar = 'B'
+        for i in range(4):
+            for j in range(4):
+                if self.gridArray[i][j] == deleteChar:
+                    self.gridArray[i][j] = '-'
+
+    def getInputMove(self):
+        # Keep on trying for input until we get a valid input
+        while True:
+            move = input("Where would you like to move?\n")
+            if move.upper() == 'Q':
+                return 'Q'
+            move = move.split()
+            # If they input wrong number of elements
+            if len(move) != 3:
+                if len(move) != 7:
+                    print("Invalid input form. Incorrect number of arguments.")
+                    continue
+
+            # If first two (x,y) are not numbers, try again
+            if not move[0].isnumeric() or not move[1].isnumeric():
+                print("Invalid input form. Example Input: '2 1 E 1 1 2 4' OR '2 1 E'")
+                continue
+            row, col, direc = int(move[0]), int(move[1]), move[2].upper()
+
+            # If 3rd element is not a direction, try again
+            if direc not in AllPossibleMoves.listDir:
+                print("Impossilbe move.")
+                continue
+            legalXY = range(1,5)
+
+            # Check if first two numbers are in the grid
+            if row not in legalXY or col not in legalXY:
+                print("Outside of grid. Must be between (1,1) and (4,4).")
+                continue
+
+            # Check if all cases for last 4 optional numbers
+            if len(move) == 7:
+                # Check they are all numbers
+                if not move[3].isnumeric() or not move[4].isnumeric() or not move[5].isnumeric() or not move[6].isnumeric():
+                    print("Invalid input form. Example Input: '2 1 E 1 1 2 4' OR '2 1 E'")
+                    continue
+                neutPreX, neutPreY, neutPostX, neutPostY = int(move[3]), int(move[4]), int(move[5]), int(move[6])
+
+                # Check that all the numbers are between [1,4]
+                if neutPreX not in legalXY or neutPreY not in legalXY or neutPostX not in legalXY or neutPostY not in legalXY:
+                    print("Outside of grid. Must be between (1,1) and (4,4).")
+                    continue
+                else:
+                    # Return the full 7 arguments (yes neutral piece move)
+                    return (row, col, direc, int(move[3]), int(move[4]), int(move[5]), int(move[6]))
+            # Return only 3 arguments (no neutral piece move)
+            return (row, col, direc)
+
+    def commitLPieceMove(self, x, y, dir):
+        arrRow = y - 1
+        arrCol = x - 1
+        if self.whoseTurn == 1:
+            writeChar = 'R'
+            self.player1 = (x, y, dir)
+        elif self.whoseTurn == 2:
+            writeChar = 'B'
+            self.player2 = (x, y, dir)
+        
+        self.gridArray[arrRow][arrCol] = writeChar
+        match dir:
+            case 'N':
+                self.gridArray[arrRow - 1][arrCol] = writeChar
+                if x <= 2:
+                    self.gridArray[arrRow][arrCol + 1] = writeChar
+                    self.gridArray[arrRow][arrCol + 2] = writeChar
+                else:
+                    self.gridArray[arrRow][arrCol - 1] = writeChar
+                    self.gridArray[arrRow][arrCol - 2] = writeChar
+            case 'S':
+                self.gridArray[arrRow + 1][arrCol] = writeChar
+                if x <= 2:
+                    self.gridArray[arrRow][arrCol + 1] = writeChar
+                    self.gridArray[arrRow][arrCol + 2] = writeChar
+                else:
+                    self.gridArray[arrRow][arrCol - 1] = writeChar
+                    self.gridArray[arrRow][arrCol - 2] = writeChar
+            case 'E':
+                self.gridArray[arrRow][arrCol + 1] = writeChar
+                if y <= 2:
+                    # down long
+                    self.gridArray[arrRow + 1][arrCol] = writeChar
+                    self.gridArray[arrRow + 2][arrCol] = writeChar
+                else:
+                    # up long
+                    self.gridArray[arrRow - 1][arrCol] = writeChar
+                    self.gridArray[arrRow - 2][arrCol] = writeChar
+            case 'W':
+                self.gridArray[arrRow][arrCol - 1] = writeChar
+                if y <= 2:
+                    # down long
+                    self.gridArray[arrRow + 1][arrCol] = writeChar
+                    self.gridArray[arrRow + 2][arrCol] = writeChar
+                else:
+                    # up long
+                    self.gridArray[arrRow - 1][arrCol] = writeChar
+                    self.gridArray[arrRow - 2][arrCol] = writeChar
+        if self.whoseTurn == 1:
+            self.whoseTurn = 2
+        else:
+            self.whoseTurn = 1
+              
+                
+    def commitNeutralMove(self):
+        pass
+
+    def undoDeleteMove(self):
+        if self.whoseTurn == 1:
+            self.commitLPieceMove(self.player1[0], self.player1[1], self.player1[2])
+            self.whoseTurn = 1
+        else:
+            self.commitLPieceMove(self.player2[0], self.player2[1], self.player2[2])
+            self.whoseTurn = 2
+
+
+    def mainGameLoop(self):
+        while True:
+            self.printGameGrid()
+            move = self.getInputMove()
+            if move == 'Q' or move == 'q':
+                print("Quitting out of the game")
+                break
+            listMove = [None, None, None, None, None, None, None]
+            for i in range(len(move)):
+                listMove[i] = move[i]
+            if self.checkIsLegalMove(listMove[0], listMove[1], listMove[2], listMove[3], listMove[4], listMove[5], listMove[6]):
+                self.commitLPieceMove(listMove[0], listMove[1], listMove[2])
+            else:
+                print("Not a legal move")
+                self.undoDeleteMove()
+                continue
+
+            # if the inputted move has a neutral piece move, then do the neutral piece move
+            if len(move) == 7:
+                pass
+
+
+myGame = LGame()
+# myGame.printGameGrid()
+# print(myGame.checkIsLegalMove(2,1, 'E', 1))
+# print(myGame.getInputMove())
+myGame.mainGameLoop()
