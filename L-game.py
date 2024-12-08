@@ -55,7 +55,7 @@ def testAllPossibleMove():
             text_file.write(testGame.textPrintGameGrid())
             testGame.whoseTurn = 1
             testGame.deleteCurrPlayerFromGrid()
-            
+
 class LGame:
     """
     The overall game. Holds data for the playing grid as well as where each element is placed.
@@ -84,8 +84,10 @@ class LGame:
         # Checking whose turn it is, see if they have legal moves. If zero legal moves, then other player wins.
         for move in AllPossibleMoves.listMoves:
             if self.checkIsLegalMove(move[0], move[1], move[2]):
+                print(move)
                 return False
         return True
+    
 
     def checkIsLegalMove(self, x, y, dir, nPreX = None, nPreY = None, nPostX = None, nPostY = None):
         # Delete the player we are checking for from the grid so we can accurately check if the move is legal
@@ -117,12 +119,6 @@ class LGame:
             if nPrevCoord == (x, y):
                 print("Neutral piece overlap with L move")
                 return False
-        
-        #########
-        # Left off working here. Need to check if the postNeutral piece is in a legal position.
-        # Check if it tries to land where the opponents piece already is.
-        # Check if it is trying to move where the current players piece is trying to move to
-        #########
 
         if self.gridArray[arrRow][arrCol] != '-':
             return False
@@ -142,14 +138,14 @@ class LGame:
                     if nPostCoord == (x + 1, y) or nPostCoord == (x + 2, y):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow][arrCol + 1] != '-' and self.gridArray[arrRow][arrCol + 2] != '-':
+                    if self.gridArray[arrRow][arrCol + 1] != '-' or self.gridArray[arrRow][arrCol + 2] != '-':
                         return False
                 else:
                     # Check left-long
                     if nPostCoord == (x - 1, y) or nPostCoord == (x - 2, y):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow][arrCol - 1] != '-' and self.gridArray[arrRow][arrCol - 2] != '-':
+                    if self.gridArray[arrRow][arrCol - 1] != '-' or self.gridArray[arrRow][arrCol - 2] != '-':
                         return False
             case 'S':
                 # Check bottom
@@ -163,14 +159,14 @@ class LGame:
                     if nPostCoord == (x + 1, y) or nPostCoord == (x + 2, y):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow][arrCol + 1] != '-' and self.gridArray[arrRow][arrCol + 2] != '-':
+                    if self.gridArray[arrRow][arrCol + 1] != '-' or self.gridArray[arrRow][arrCol + 2] != '-':
                         return False
                 else:
                     # Check left-long
                     if nPostCoord == (x - 1, y) or nPostCoord == (x - 2, y):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow][arrCol - 1] != '-' and self.gridArray[arrRow][arrCol - 2] != '-':
+                    if self.gridArray[arrRow][arrCol - 1] != '-' or self.gridArray[arrRow][arrCol - 2] != '-':
                         return False
             case 'E':
                 # Check right
@@ -184,14 +180,14 @@ class LGame:
                     if nPostCoord == (x, y + 1) or nPostCoord == (x, y + 2):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow + 1][arrCol] != '-' and self.gridArray[arrRow + 2][arrCol] != '-':
+                    if self.gridArray[arrRow + 1][arrCol] != '-' or self.gridArray[arrRow + 2][arrCol] != '-':
                         return False
                 else:
                     # Check up-long
                     if nPostCoord == (x, y - 1) or nPostCoord == (x, y - 2):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow - 1][arrCol] != '-' and self.gridArray[arrRow - 2][arrCol] != '-':
+                    if self.gridArray[arrRow - 1][arrCol] != '-' or self.gridArray[arrRow - 2][arrCol] != '-':
                         return False
             case 'W':
                 # Check left
@@ -202,14 +198,14 @@ class LGame:
                     if nPostCoord == (x, y + 1) or nPostCoord == (x, y + 2):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow + 1][arrCol] != '-' and self.gridArray[arrRow + 2][arrCol] != '-':
+                    if self.gridArray[arrRow + 1][arrCol] != '-' or self.gridArray[arrRow + 2][arrCol] != '-':
                         return False
                 else:
                     # Check up-long
                     if nPostCoord == (x, y - 1) or nPostCoord == (x, y - 2):
                         print("Neutral piece overlap with L move")
                         return False
-                    if self.gridArray[arrRow - 1][arrCol] != '-' and self.gridArray[arrRow - 2][arrCol] != '-':
+                    if self.gridArray[arrRow - 1][arrCol] != '-' or self.gridArray[arrRow - 2][arrCol] != '-':
                         return False
         
         # If it passed all the previous tests, then it is a legal move
@@ -372,6 +368,16 @@ class LGame:
             self.commitLPieceMove(self.player2[0], self.player2[1], self.player2[2])
             self.whoseTurn = 2
 
+    def gameState(self):
+        state = []
+        state.append(self.whoseTurn)
+        for i in range(4):
+            for j in range(4):
+                state.append(self.gridArray[i][j])
+        print(tuple(state))
+
+    def aiGameLoop(self):
+        pass
 
     def mainGameLoop(self):
         while True:
@@ -385,14 +391,14 @@ class LGame:
                 listMove[i] = move[i]
             if self.checkIsLegalMove(listMove[0], listMove[1], listMove[2]):
                 self.commitLPieceMove(listMove[0], listMove[1], listMove[2])
-            # if the user inputted enough arguments for a neutral piece move, test if legal neutral piece move
-            if len(move) == 7:
-                if self.checkIsNeutralLegalMove(listMove[3], listMove[4], listMove[5], listMove[6]):
-                    self.commitNeutralMove(listMove[3], listMove[4], listMove[5], listMove[6])
             else:
                 print("Not a legal move")
                 self.undoDeleteMove()
                 continue
+            # if the user inputted enough arguments for a neutral piece move, test if legal neutral piece move
+            if len(move) == 7:
+                if self.checkIsNeutralLegalMove(listMove[3], listMove[4], listMove[5], listMove[6]):
+                    self.commitNeutralMove(listMove[3], listMove[4], listMove[5], listMove[6])
             if self.isGameOver():
                 print("Player " + str(self.whoseTurn) + " has no more possible moves.")
                 if self.whoseTurn == 1:
@@ -404,6 +410,16 @@ class LGame:
             else:
                 self.undoDeleteMove()
 
-
 myGame = LGame()
-myGame.mainGameLoop()
+myGame.gameState()
+# keepLoop = True
+# while keepLoop:
+#     answer = input("Would you like to play against a person (1) or an AI (2)? ")
+#     if answer == '1' or answer == '2':
+#         keepLoop = False
+#     else:
+#         print("Please input either '1' or '2'")
+# if answer == '1':
+#     myGame.mainGameLoop()
+# elif answer == '2':
+#     myGame.aiGameLoop()
