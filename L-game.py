@@ -474,21 +474,37 @@ class LGame:
                 else:
                     self.undoDeleteMove()
             elif self.whoseTurn == 2:
-                if self.gamestate() not in dictNumMoves:
-                    dictNumMoves[self.gamestate()] = self.evalFunction()
+                score = -999999
                 for move in self.getLegalActions():
-                    recurAIplay(self.gamestate(), move, 0)
-                
-                
-        self.dictTerminalStates = {}
-        while True:
-            for move in AllPossibleMoves.listMove:
+                    tempScore = self.greedySearchScore(move, self.gamestate())
+                    if tempScore > score:
+                        bestMove = move
+                        score = tempScore
+                bestMove = list(bestMove)
+                self.commitLPieceMove(bestMove[0], bestMove[1], bestMove[2])
+                if len(bestMove) == 7:
+                    self.commitNeutralMove(bestMove[3], bestMove[4], bestMove[5], bestMove[6])
 
-                if self.gamestate not in self.dictTerminalStates:
-                    if self.isGameOver() and self.whoseTurn == 1:
-                        self.dictTerminalStates[self.gamestate] = 1
-                    elif self.isGameOver() and self.whoseTurn == 2:
-                        self.dictTerminalStates[self.gamestate] = -1
+                
+        # self.dictTerminalStates = {}
+        # while True:
+        #     for move in AllPossibleMoves.listMove:
+
+        #         if self.gamestate not in self.dictTerminalStates:
+        #             if self.isGameOver() and self.whoseTurn == 1:
+        #                 self.dictTerminalStates[self.gamestate] = 1
+        #             elif self.isGameOver() and self.whoseTurn == 2:
+        #                 self.dictTerminalStates[self.gamestate] = -1
+
+    def greedySearchScore(self, move, gamestate):
+        move = list(move)
+        listMove = [None, None, None, None, None, None, None]
+        for i in range(len(move)):
+            listMove[i] = move[i]
+        tempGame = gamestateToBoard(gamestate)
+        tempGame.commitLPieceMove(move[0], move[1], move[2])
+        return tempGame.numPossibleMoves()
+        
 
     def recurAIPlay(self, gamestate, m, depth):
         if gamestate in dictTerminalStates:
