@@ -1,3 +1,5 @@
+import json
+
 class AllPossibleMoves:
     listDir = {'N', 'E', 'S', 'W'}
     listMoves = {
@@ -56,6 +58,11 @@ def testAllPossibleMove():
             testGame.whoseTurn = 1
             testGame.deleteCurrPlayerFromGrid()
 
+def gamestateToBoard(gamestate):
+    listState = list(gamestate)
+    newGame = LGame(listState[0], listState[1], listState[2], listState[3], listState[4])
+    return newGame
+
 class LGame:
     """
     The overall game. Holds data for the playing grid as well as where each element is placed.
@@ -65,29 +72,86 @@ class LGame:
         Position of neutral piece #1
         Position of neutral piece #2
     """
-    def __init__(self):
-        """
-        Initialize the starting locations for the L-pieces and neutral pieces.
-        """
-        self.player1 = (1, 2, 'S') # The red player
-        self.player2 = (4, 3, 'N') # The blue player
-        self.neutrals = [(1, 1), (4, 4)]
+    # def __init__(self):
+    #     """
+    #     Initialize the starting locations for the L-pieces and neutral pieces.
+    #     """
+    #     self.player1 = (1, 2, 'S') # The red player
+    #     self.player2 = (4, 3, 'N') # The blue player
+    #     self.neutrals = [(1, 1), (4, 4)]
+    #     self.whoseTurn = 1
+    #     self.gridArray = [
+    #         ['X', '-', '-', '-'],
+    #         ['R', 'R', 'R', 'B'],
+    #         ['R', 'B', 'B', 'B'],
+    #         ['-', '-', '-', 'X'], ]
+
+    def __init__(self, turn=1, player1=(1,2,'S'), player2=(4, 3, 'N'), neutral1=(1,1), neutral2=(4,4)):
+        self.player1 = player1 # The red player (1, 2, 'S')
+        self.player2 = player2 # The blue player (4, 3, 'N')
+        self.neutrals = [(1,1), (4,4)]
         self.whoseTurn = 1
         self.gridArray = [
             ['X', '-', '-', '-'],
-            ['R', 'R', 'R', 'B'],
-            ['R', 'B', 'B', 'B'],
+            ['-', '-', '-', '-'],
+            ['-', '-', '-', '-'],
             ['-', '-', '-', 'X'], ]
-            
-
-    def isGameOver(self):
-        # Checking whose turn it is, see if they have legal moves. If zero legal moves, then other player wins.
+        
+        player1, player2 = list(player1), list(player2)
+        neutral1, neutral2 = list(neutral1), list(neutral2)
+        self.commitLPieceMove(player1[0], player1[1], player1[2])
+        self.commitLPieceMove(player2[0], player2[1], player2[2])
+        self.whoseTurn = turn
+        self.commitNeutralMove(1, 1, neutral1[0], neutral1[1])
+        self.commitNeutralMove(4, 4, neutral2[0], neutral2[1])
+    
+    def getLegalActions(self):
+        possibleMoves = []
         for move in AllPossibleMoves.listMoves:
             if self.checkIsLegalMove(move[0], move[1], move[2]):
-                print(move)
-                return False
-        return True
+                possibleMoves.append(move)
+                firstNPiece = list(self.neutrals[0])
+                secondNPiece = list(self.neutrals[1])
+                player = self.whoseTurn
+                if player == 1:
+                    prevMove = self.player1
+                elif player == 2:
+                    prevMove = self.player2
+                self.deleteCurrPlayerFromGrid()
+
+                self.commitLPieceMove(move[0], move[1], move[2])
+                for row in range(4):
+                    for col in range(4):
+                        if self.gridArray[row][col] == '-':
+                            possibleMoves.append((move[0], move[1], move[2], firstNPiece[0], firstNPiece[1], col + 1, row + 1))
+                            possibleMoves.append((move[0], move[1], move[2], secondNPiece[0], secondNPiece[1], col + 1, row + 1))
+                self.whoseTurn = player
+                if player == 1:
+                    self.player1 = prevMove
+                elif player == 2:
+                    self.player2 = prevMove
+        return possibleMoves
+            
+    def isGameOver(self):
+        if self.numPossibleMoves() == 0:
+            return True
+        else:
+            return False
     
+    def evalFunction(self):
+        player = self.whoseTurn
+        self.whoseTurn = 1
+        i1 = self.numPossibleMoves()
+        self.whoseTurn = 2
+        i2 = self.numPossibleMoves()
+        self.whoseTurn = player
+        return (i1, i2)
+
+    def numPossibleMoves(self):
+        for move in AllPossibleMoves.listMoves:
+            if self.checkIsLegalMove(move[0], move[1], move[2]):
+                i += 1
+        return i
 
     def checkIsLegalMove(self, x, y, dir, nPreX = None, nPreY = None, nPostX = None, nPostY = None):
         # Delete the player we are checking for from the grid so we can accurately check if the move is legal
@@ -368,16 +432,92 @@ class LGame:
             self.commitLPieceMove(self.player2[0], self.player2[1], self.player2[2])
             self.whoseTurn = 2
 
-    def gameState(self):
+    def gamestate(self):
         state = []
         state.append(self.whoseTurn)
-        for i in range(4):
-            for j in range(4):
-                state.append(self.gridArray[i][j])
-        print(tuple(state))
+        state.append(self.player1)
+        state.append(self.player2)
+        state.append(self.neutrals[0])
+        state.append(self.neutrals[1])
+        return tuple(state)
 
     def aiGameLoop(self):
-        pass
+        while True:
+            if self.isGameOver():
+                print("Player " + str(self.whoseTurn) + " has no more possible moves.")
+                if self.whoseTurn == 1:
+                    opp = '2'
+                else:
+                    opp = '1'
+                print("Player " + opp + " is the winner!")
+                break
+            if self.whoseTurn == 1:
+                self.printGameGrid()
+                move = self.getInputMove()
+                if move == 'Q' or move == 'q':
+                    print("Quitting out of the game")
+                    break
+                listMove = [None, None, None, None, None, None, None]
+                for i in range(len(move)):
+                    listMove[i] = move[i]
+                if self.checkIsLegalMove(listMove[0], listMove[1], listMove[2]):
+                    self.commitLPieceMove(listMove[0], listMove[1], listMove[2])
+                else:
+                    print("Not a legal move")
+                    self.undoDeleteMove()
+                    continue
+                # if the user inputted enough arguments for a neutral piece move, test if legal neutral piece move
+                if len(move) == 7:
+                    if self.checkIsNeutralLegalMove(listMove[3], listMove[4], listMove[5], listMove[6]):
+                        self.commitNeutralMove(listMove[3], listMove[4], listMove[5], listMove[6])
+                
+                else:
+                    self.undoDeleteMove()
+            elif self.whoseTurn == 2:
+                if self.gamestate() not in dictNumMoves:
+                    dictNumMoves[self.gamestate()] = self.evalFunction()
+                for move in self.getLegalActions():
+                    recurAIplay(self.gamestate(), move, 0)
+                
+                
+        self.dictTerminalStates = {}
+        while True:
+            for move in AllPossibleMoves.listMove:
+
+                if self.gamestate not in self.dictTerminalStates:
+                    if self.isGameOver() and self.whoseTurn == 1:
+                        self.dictTerminalStates[self.gamestate] = 1
+                    elif self.isGameOver() and self.whoseTurn == 2:
+                        self.dictTerminalStates[self.gamestate] = -1
+
+    def recurAIPlay(self, gamestate, m, depth):
+        if gamestate in dictTerminalStates:
+            return (m, dictTerminalStates[gamestate] * 1000000)
+        if gamestate in dictNumMoves:
+            return (m, dictTerminalStates[gamestate])
+        newGame = gamestateToBoard(gamestate)
+        if newGame.isGameOver():
+            if newGame.whoseTurn == 1:
+                dictTerminalStates[newGame.gamestate()] = -1
+            elif newGame.whoseTurn == 2:
+                dictTerminalStates[newGame.gamestate()] = 1
+        elif depth >= maxDepth:
+            return 0
+        else:
+            m = list(m)
+            # print(m)
+            newGame.commitLPieceMove(m[0], m[1], m[2])
+            if len(m) > 3:
+                newGame.commitNeutralMove(m[3], m[4], m[5], m[6])
+            # newGame.printGameGrid()
+            for move in newGame.getLegalActions():
+                newGame.recurAIPlay(newGame.gamestate(), move, depth + 1)
+
+    def aivsai(self):
+        for move in self.getLegalActions():
+            self.recurAIPlay(self.gamestate(), move, 0)
+        print(dictTerminalStates)
+
 
     def mainGameLoop(self):
         while True:
@@ -411,15 +551,28 @@ class LGame:
                 self.undoDeleteMove()
 
 myGame = LGame()
-myGame.gameState()
-# keepLoop = True
-# while keepLoop:
-#     answer = input("Would you like to play against a person (1) or an AI (2)? ")
-#     if answer == '1' or answer == '2':
-#         keepLoop = False
-#     else:
-#         print("Please input either '1' or '2'")
-# if answer == '1':
-#     myGame.mainGameLoop()
-# elif answer == '2':
-#     myGame.aiGameLoop()
+# myGame.printGameGrid()
+# print(myGame.getLegalActions())
+
+# gamestateToBoard(myGame.gamestate())
+keepLoop = True
+with open('terminal.json') as f:
+    dictTerminalStates = json.load(f)
+with open('numMoves.json') as g:
+    dictNumMoves = json.load(g)
+maxDepth = 2
+while keepLoop:
+    answer = input("Would you like to play against a person (1) or an AI (2) or AI vs AI (3)? ")
+    if answer == '1' or answer == '2' or answer == '3':
+        keepLoop = False
+    else:
+        print("Please input either '1' or '2' or '3'")
+if answer == '1':
+    myGame.mainGameLoop()
+elif answer == '2':
+    myGame.aiGameLoop()
+elif answer == '3':
+    myGame.aivsai()
+
+# myGame = gamestateToBoard((2, (2, 2, 'S'), (3, 4, 'N'), (1,3), (4, 3)))
+# myGame.printGameGrid()
