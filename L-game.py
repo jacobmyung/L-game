@@ -86,7 +86,8 @@ class LGame:
     #         ['R', 'B', 'B', 'B'],
     #         ['-', '-', '-', 'X'], ]
 
-    def __init__(self, turn=1, player1=(1,2,'S'), player2=(4, 3, 'N'), neutral1=(1,1), neutral2=(4,4)):
+    # def __init__(self, turn=1, player1=(1,3,'N'), player2=(4, 2, 'S'), neutral1=(1,1), neutral2=(4,4)):
+    def __init__(self, turn=1, player1=(3,1,'W'), player2=(2, 4, 'E'), neutral1=(1,1), neutral2=(4,4)):
         self.player1 = player1 # The red player (1, 2, 'S')
         self.player2 = player2 # The blue player (4, 3, 'N')
         self.neutrals = [(1,1), (4,4)]
@@ -148,6 +149,7 @@ class LGame:
         return (i1, i2)
 
     def numPossibleMoves(self):
+        i = 0
         for move in AllPossibleMoves.listMoves:
             if self.checkIsLegalMove(move[0], move[1], move[2]):
                 i += 1
@@ -451,6 +453,7 @@ class LGame:
                     opp = '1'
                 print("Player " + opp + " is the winner!")
                 break
+            self.undoDeleteMove()
             if self.whoseTurn == 1:
                 self.printGameGrid()
                 move = self.getInputMove()
@@ -474,16 +477,19 @@ class LGame:
                 else:
                     self.undoDeleteMove()
             elif self.whoseTurn == 2:
-                score = -999999
+                minScore = 999999
                 for move in self.getLegalActions():
                     tempScore = self.greedySearchScore(move, self.gamestate())
-                    if tempScore > score:
+                    if tempScore < minScore:
                         bestMove = move
-                        score = tempScore
+                        minScore = tempScore
                 bestMove = list(bestMove)
-                self.commitLPieceMove(bestMove[0], bestMove[1], bestMove[2])
+                if self.checkIsLegalMove(bestMove[0], bestMove[1], bestMove[2]):
+                    self.commitLPieceMove(bestMove[0], bestMove[1], bestMove[2])
                 if len(bestMove) == 7:
-                    self.commitNeutralMove(bestMove[3], bestMove[4], bestMove[5], bestMove[6])
+                    if self.checkIsNeutralLegalMove(bestMove[3], bestMove[4], bestMove[5], bestMove[6]):
+                        self.commitNeutralMove(bestMove[3], bestMove[4], bestMove[5], bestMove[6])
+                print(bestMove)
 
                 
         # self.dictTerminalStates = {}
@@ -503,6 +509,9 @@ class LGame:
             listMove[i] = move[i]
         tempGame = gamestateToBoard(gamestate)
         tempGame.commitLPieceMove(move[0], move[1], move[2])
+        if len(move) == 7:
+            if tempGame.checkIsNeutralLegalMove(listMove[3], listMove[4], listMove[5], listMove[6]):
+                tempGame.commitNeutralMove(listMove[3], listMove[4], listMove[5], listMove[6])
         return tempGame.numPossibleMoves()
         
 
@@ -572,10 +581,10 @@ myGame = LGame()
 
 # gamestateToBoard(myGame.gamestate())
 keepLoop = True
-with open('terminal.json') as f:
-    dictTerminalStates = json.load(f)
-with open('numMoves.json') as g:
-    dictNumMoves = json.load(g)
+# with open('terminal.json') as f:
+#     dictTerminalStates = json.load(f)
+# with open('numMoves.json') as g:
+#     dictNumMoves = json.load(g)
 maxDepth = 2
 while keepLoop:
     answer = input("Would you like to play against a person (1) or an AI (2) or AI vs AI (3)? ")
@@ -586,6 +595,9 @@ while keepLoop:
 if answer == '1':
     myGame.mainGameLoop()
 elif answer == '2':
+    whoFirst = input("Would you like to move first (1) or the AI to move first (2)? ")
+    if whoFirst == '2':
+        myGame.whoseTurn = 2
     myGame.aiGameLoop()
 elif answer == '3':
     myGame.aivsai()
